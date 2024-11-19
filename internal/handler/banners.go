@@ -36,7 +36,7 @@ func (ctr *Counter) GetBannerClick(c echo.Context) error {
 	id, err := strconv.Atoi(bannerID)
 	if err != nil {
 		l.Errorf("parsing banner id: %v", err)
-		return fmt.Errorf("error parsing banner id: %+v", err)
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("error parsing banner id: %+v", err))
 	}
 	ctr.service.Inc(id)
 	return c.NoContent(http.StatusOK)
@@ -58,21 +58,19 @@ func (ctr *Counter) GetBannerStats(c echo.Context) error {
 	id, err := strconv.Atoi(bannerID)
 	if err != nil {
 		l.Errorf("error parsing banner id: %v", err)
-		return fmt.Errorf("error parsing banner id: %+v", err)
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("error parsing banner id: %+v", err))
 	}
 	var req request.GetStatRequest
-	l.Infof("query: %v", c.Request().URL.Query())
 	// c.Bind() doesn't work for post
 	// here is a workaround
 	if err = (&echo.DefaultBinder{}).BindQueryParams(c, &req); err != nil {
 		l.Errorf("invalid request: %v", err)
-		return fmt.Errorf("invalid request: %v", err)
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("invalid request: %+v", err))
 	}
-	l.Infof("from: %d to: %d", req.From, req.To)
 	stat, err := ctr.service.Stat(c.Request().Context(), id, time.Unix(req.From, 0), time.Unix(req.To, 0))
 	if err != nil {
 		l.Errorf("failed to get stat: %v", err)
-		return fmt.Errorf("failed to get stat: %+v", err)
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("failed to get stat: %+v", err))
 	}
 	return c.JSON(http.StatusOK, stat)
 }
