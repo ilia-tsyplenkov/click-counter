@@ -16,7 +16,7 @@ func (srv *clickStatService) collect() {
 			m[id]++
 		case <-ticker:
 			if len(m) > 0 {
-				ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+				ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 				if err := srv.repo.AddClicks(ctx, m, time.Now().Round(60*time.Second).UTC()); err != nil {
 					l.Errorf("add clicks: %v", err)
 				} else {
